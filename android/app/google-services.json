@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "613741607564",
+    "project_id": "food-reviews---gpvj",
+    "storage_bucket": "food-reviews---gpvj.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:613741607564:android:33d3f791f40cc61a1b59a9",
+        "android_client_info": {
+          "package_name": "com.blackhole.foodgpvjreviews"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "613741607564-31eoidqcv33ip84icq7cu4spjlbb3pnj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.blackhole.foodgpvjreviews",
+            "certificate_hash": "af15d0dbc91aa2bf38c6197f12e7f05ea7a23aaf"
+          }
+        },
+        {
+          "client_id": "613741607564-uenmkejh7nhfgchbv16k8tkqsiqvaqe1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvfpuJT7bH8GO1aBvE2opwjNZq0KBEJ5M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "613741607564-uenmkejh7nhfgchbv16k8tkqsiqvaqe1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
