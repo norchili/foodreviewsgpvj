@@ -36,6 +36,10 @@ class UserBloc implements Bloc {
     return _authRepository.signInFirebase();
   }
 
+  //Metodo para autenticar con Facebook en firebase
+  Future<UserCredential> signInWithFacebook() =>
+      _authRepository.signInWithFacebook();
+
   void signOut() {
     _authRepository.signOut();
   }
@@ -80,9 +84,15 @@ class UserBloc implements Bloc {
       _cloudFirestoreRepository.likePlace(place, userId);
       */
 
-  //Metodo para Guardar imagen en la FirebaseStorage
+  //Metodos de Firebase Storage
+  //1. Metodo para Guardar imagen en la FirebaseStorage
   Future<UploadTask> uploadFile(String path, File image) =>
       _firebaseStorageRepository.uploadFile(path, image);
+  //2. Metodo para obtener la url de los logos de Facebook y Google
+  Future<Map<String, String>> getUrlLogos() =>
+      _firebaseStorageRepository.getUrlLogos();
+  Future<String?> getUrlLogo(String nameLogo) =>
+      _firebaseStorageRepository.getUrlLogo(nameLogo);
 
   @override
   void dispose() {

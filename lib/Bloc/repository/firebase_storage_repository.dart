@@ -7,4 +7,10 @@ class FirebaseStorageRepository {
 
   Future<UploadTask> uploadFile(String path, File image) =>
       _firebaseStorageApi.uploadFile(path, image);
+
+  Future<Map<String, String>> getUrlLogos() =>
+      _firebaseStorageApi.getUrlLogos();
+
+  Future<String?> getUrlLogo(String nameLogo) =>
+      _firebaseStorageApi.getUrlLogo(nameLogo);
 }

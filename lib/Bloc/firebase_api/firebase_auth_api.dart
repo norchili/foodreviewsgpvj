@@ -1,10 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:developer';
 
 class FirebaseAuthAPI {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn googleSignIn = GoogleSignIn();
+  final FacebookAuth facebookAuth = FacebookAuth.instance;
 
   //Metodo para inciar sesion primero en Google y luego en firebase
   Future<UserCredential?> signIn() async {
@@ -59,6 +61,19 @@ class FirebaseAuthAPI {
     }
   }
 
+  //Metodo para autenticar con facebook en firebase
+  Future<UserCredential> signInWithFacebook() async {
+    // Trigger the sign-in flow
+    final LoginResult loginResult = await facebookAuth.login();
+
+    // Create a credential from the access token
+    final OAuthCredential facebookAuthCredential =
+        FacebookAuthProvider.credential(loginResult.accessToken!.token);
+
+    // Once signed in, return the UserCredential
+    return _auth.signInWithCredential(facebookAuthCredential);
+  }
+
   //Metodo para obtener el usuario actualmente logueado
   Future<User?> currentUser() async {
     return _auth.currentUser;
@@ -72,6 +87,7 @@ class FirebaseAuthAPI {
 
   //Metodo para cerrar la sesion en Firebase y Google
   void signOut() async {
+    await facebookAuth.logOut();
     await googleSignIn.signOut().then((value) {
       log("Sesion de Google cerrada: $value",
           name: "Autenticacion: Google Sign Out");
