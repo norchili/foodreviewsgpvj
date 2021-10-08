@@ -1,87 +1,57 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:foodgpvjreviews/Bloc/bloc.dart';
-import 'package:foodgpvjreviews/User/model/user.dart' as model_user;
+import 'package:foodgpvjreviews/User/model/user.dart';
 import 'package:foodgpvjreviews/User/ui/widgets/login_gradient_back.dart';
 import 'package:foodgpvjreviews/User/ui/widgets/logo_social_network.dart';
 import 'package:foodgpvjreviews/User/ui/widgets/text_input.dart';
-import 'package:foodgpvjreviews/food_gpvj_main_app.dart';
 import 'package:foodgpvjreviews/responses/sign_in_response.dart';
 import 'package:foodgpvjreviews/widgets/custom_button.dart';
 import 'package:foodgpvjreviews/widgets/error_alert_dialog.dart';
 import 'package:generic_bloc_provider/generic_bloc_provider.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+class SignUpScreen extends StatelessWidget {
+  const SignUpScreen({Key? key}) : super(key: key);
 
-  @override
-  State<StatefulWidget> createState() {
-    return _LoginScreen();
-  }
-}
-
-class _LoginScreen extends State<LoginScreen> {
-  late double screenWidht;
-  UserBloc? userBloc;
-  bool isUrlLogoSet = false;
   @override
   Widget build(BuildContext context) {
-    userBloc = BlocProvider.of(context);
-    screenWidht = MediaQuery.of(context)
-        .size
-        .width; //Obtenemos el tamaño exacto de la pantalla del movil
-    return _handleCurrentSession();
-  }
+    UserBloc userBloc = BlocProvider.of(context);
+    double screenWidht = MediaQuery.of(context).size.width;
 
-  //Metodo para establecer la pantalla de inicio
-  //en base a si está o no autenticado con google
-  Widget _handleCurrentSession() {
-    return StreamBuilder(
-        stream: userBloc!
-            .authStatus, //Solicitamos conocer el estatus de la sesion de Firebase
-        builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
-          //snapshot contiene nuestro objeto User de Firebase
-          if (!snapshot.hasData || snapshot.hasError) {
-            return signInGoogleUI(); //Si no hay datos en User pide que se autentique
-          } else {
-            return const FoodGPVJMainApp(); //Si hay datos de Usuario autenticado pasa a la pantalla principal de la app de FoodGPVJ
-          }
-        });
-  }
-
-  Widget signInGoogleUI() {
     final _controllerEmail = TextEditingController();
+    final _controllerName = TextEditingController();
     final _controllerPassword = TextEditingController();
+
     return Scaffold(
       body: Stack(
         alignment: Alignment.center,
         children: <Widget>[
           const LoginGradientBack(),
           Container(
-              width: screenWidht,
               margin:
-                  const EdgeInsets.only(top: 150.0, left: 15.0, right: 15.0),
-              child: ListView(
+                  const EdgeInsets.only(top: 180.0, left: 15.0, right: 15.0),
+              child: Column(
                 children: <Widget>[
-                  SizedBox(
-                      width: screenWidht,
-                      child: const Text("Inicia sesión",
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                              fontSize: 24.0,
-                              fontFamily: "Comfortaa",
-                              color: Colors.black,
-                              fontWeight: FontWeight.w700))),
+                  Flexible(
+                      child: SizedBox(
+                          width: screenWidht,
+                          child: const Text("Vamos a empezar",
+                              textAlign: TextAlign.left,
+                              style: TextStyle(
+                                  fontSize: 24.0,
+                                  fontFamily: "Comfortaa",
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w700)))),
                   space(1.0, screenWidht),
-                  SizedBox(
-                      width: screenWidht,
-                      //margin: const EdgeInsets.only(top: 5.0, bottom: 25.0),
-                      child: const Text("¡Es un gusto verte de nuevo!",
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                              fontSize: 14.0,
-                              color: Color(0xFFBBBCC2),
-                              fontWeight: FontWeight.bold))),
+                  Flexible(
+                      child: SizedBox(
+                          width: screenWidht,
+                          //margin: const EdgeInsets.only(top: 5.0, bottom: 25.0),
+                          child: const Text("¡Crea una cuenta para continuar!",
+                              textAlign: TextAlign.left,
+                              style: TextStyle(
+                                  fontSize: 14.0,
+                                  color: Color(0xFFBBBCC2),
+                                  fontWeight: FontWeight.bold)))),
                   space(50.0, screenWidht),
                   TextInput(
                     hintText: "example@gmail.com",
@@ -93,36 +63,30 @@ class _LoginScreen extends State<LoginScreen> {
                   ),
                   space(20.0, screenWidht),
                   TextInput(
+                    hintText: "Nombre completo",
+                    inputType: TextInputType.name,
+                    controller: _controllerName,
+                    prefixIconData: Icons.person_outlined,
+                    fontSize: 14.0,
+                    titleText: 'Nombre',
+                  ),
+                  space(20.0, screenWidht),
+                  TextInput(
                     hintText: "Contraseña",
-                    inputType: null,
+                    inputType: TextInputType.visiblePassword,
                     controller: _controllerPassword,
                     prefixIconData: Icons.lock_outlined,
-                    isPasswordObscure: true,
                     fontSize: 14.0,
-                    titleText: 'Contraseña',
+                    titleText: 'Nombre',
                   ),
-                  space(50.0, screenWidht),
                   CustomButton(
-                    text: "Ingresar",
+                    text: "CREAR CUENTA",
                     fontSize: 20.0,
                     onPressed: () {},
                     //width: 300.0,
                     height: 70.0,
                   ),
-                  space(10.0, screenWidht),
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const <Widget>[
-                        Text("¿No tienes una cuenta?",
-                            style: TextStyle(
-                                fontSize: 11.0, color: Color(0xFFBBBCC2))),
-                        Text("  Crear cuenta",
-                            style: TextStyle(
-                                fontSize: 12.0,
-                                color: Color(0xFFFE7813),
-                                fontWeight: FontWeight.w700))
-                      ]),
-                  space(20.0, screenWidht),
+                  space(15.0, screenWidht),
                   SizedBox(
                       width: screenWidht,
                       child: const Text(
@@ -144,11 +108,11 @@ class _LoginScreen extends State<LoginScreen> {
                       child: SocialNetworkLogo(
                         pathLogo: "images/google.jpg",
                         onPresed: () {
-                          userBloc!.signOut();
-                          userBloc!.signIn().then((response) {
+                          userBloc.signOut();
+                          userBloc.signIn().then((response) {
                             if (response.error == null &&
                                 response.user != null) {
-                              userBloc!.updateUserData(model_user.User(
+                              userBloc.updateUserData(User(
                                   userId: response.user!.uid.toString(),
                                   name: response.user!.displayName.toString(),
                                   email: response.user!.email.toString(),
