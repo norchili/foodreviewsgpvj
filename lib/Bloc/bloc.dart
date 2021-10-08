@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:foodgpvjreviews/Bloc/repository/auth_repository.dart';
 import 'package:foodgpvjreviews/Bloc/repository/cloud_firestore_repository.dart';
 import 'package:foodgpvjreviews/Bloc/repository/firebase_storage_repository.dart';
+import 'package:foodgpvjreviews/responses/sign_in_response.dart';
 import 'package:generic_bloc_provider/generic_bloc_provider.dart';
 import 'package:foodgpvjreviews/User/model/user.dart' as model_user;
 
@@ -32,7 +33,7 @@ class UserBloc implements Bloc {
   }
 
   //Metodo para autenticar en Firebase con las credenciales de Goolge
-  Future<UserCredential?> signIn() {
+  Future<SignInResponse> signIn() {
     return _authRepository.signInFirebase();
   }
 

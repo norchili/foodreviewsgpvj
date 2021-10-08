@@ -41,7 +41,7 @@ class _CustomButton extends State<CustomButton> {
       onTap: widget.onPressed,
       child: Container(
         alignment: Alignment.center,
-        margin: const EdgeInsets.only(left: 20.0, right: 20.0),
+        //margin: const EdgeInsets.only(left: 20.0, right: 20.0),
         width: _width,
         height: widget.height,
         decoration: BoxDecoration(

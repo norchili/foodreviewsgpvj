@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:foodgpvjreviews/responses/sign_in_response.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:developer';
 
@@ -9,55 +12,41 @@ class FirebaseAuthAPI {
   final FacebookAuth facebookAuth = FacebookAuth.instance;
 
   //Metodo para inciar sesion primero en Google y luego en firebase
-  Future<UserCredential?> signIn() async {
+  Future<SignInResponse> signIn() async {
     GoogleSignInAccount? googleSignInAccount;
 
     //Primera autenticacion con Google
     // Trigger the authentication flow
     try {
-      googleSignInAccount = await googleSignIn
-          .signIn(); //aparece ventana o cuadro de dialogo para seleccionar cuenta de Google
-    } catch (error) {
-      googleSignInAccount = null;
-      log("Error al mostrar la ventana de cuentas de Google: ",
-          error: error, name: "Autenticacion: Google Sign In");
-    }
-    // Obtain the auth details from the request
-    if (googleSignInAccount != null) {
-      GoogleSignInAuthentication? googleAuthentication;
-      try {
-        googleAuthentication = await googleSignInAccount
-            .authentication; //Obtenemos las credenciales de la cuenta de Goolge seleccionada
-      } catch (error) {
-        log("Error al obtener las credenciales de la cuenta de Google: ",
-            error: error, name: "Autenticacion: Google Sign In");
-      }
+      googleSignInAccount =
+          await googleSignIn.signIn().onError((error, stackTrace) {
+        log("Error", error: error, stackTrace: stackTrace);
+      }); //aparece ventana o cuadro de dialogo para seleccionar cuenta de Google
 
-      OAuthCredential? credential;
-      // Create a new credential
-      if (googleAuthentication != null) {
-        credential = GoogleAuthProvider.credential(
-            accessToken: googleAuthentication.accessToken,
-            idToken: googleAuthentication.idToken);
-      } else {
-        log("Objeto credentials vacio: ",
-            name: "Autenticacion: Google Sign In");
+      if (googleSignInAccount == null) {
+        return SignInResponse(
+            error: SignInError.cancelled, user: null, providerId: null);
       }
+      // Obtain the auth details from the request
+      GoogleSignInAuthentication? googleAuthentication;
+
+      googleAuthentication = await googleSignInAccount
+          .authentication; //Obtenemos las credenciales de la cuenta de Goolge seleccionada
+
+      // Create a new credential
+      OAuthCredential? credential;
+
+      credential = GoogleAuthProvider.credential(
+          accessToken: googleAuthentication.accessToken,
+          idToken: googleAuthentication.idToken);
 
       //Segunda autenticacion con Firebase
       // Once signed in on Google, return the UserCredential of Firebase
-      if (credential != null) {
-        try {
-          UserCredential userCredential =
-              await _auth.signInWithCredential(credential);
-          return userCredential;
-        } catch (e) {
-          log("Error al autenticar con firebase: ",
-              error: e, name: "Autenticacion: Firebase");
-        }
-      }
-    } else {
-      return null;
+      //UserCredential userCredential =
+      //   await _auth.signInWithCredential(credential);
+      return signInWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      return getSignInError(e);
     }
   }
 
@@ -87,7 +76,7 @@ class FirebaseAuthAPI {
 
   //Metodo para cerrar la sesion en Firebase y Google
   void signOut() async {
-    await facebookAuth.logOut();
+    //await facebookAuth.logOut();
     await googleSignIn.signOut().then((value) {
       log("Sesion de Google cerrada: $value",
           name: "Autenticacion: Google Sign Out");
@@ -105,5 +94,15 @@ class FirebaseAuthAPI {
           stackTrace: stackTrace,
           name: "Autenticacion: Firebase Sign Out");
     });
+  }
+
+  Future<SignInResponse> signInWithCredential(
+      OAuthCredential credential) async {
+    final userCredential = await _auth.signInWithCredential(credential);
+    final user = userCredential.user!;
+    return SignInResponse(
+        error: null,
+        user: user,
+        providerId: userCredential.credential?.providerId);
   }
 }
