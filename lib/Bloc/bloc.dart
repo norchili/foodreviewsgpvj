@@ -41,6 +41,10 @@ class UserBloc implements Bloc {
   Future<UserCredential> signInWithFacebook() =>
       _authRepository.signInWithFacebook();
 
+  Future<SignInResponse> signInWithEmailAndPassword(
+          String email, String password) =>
+      _authRepository.signInWithEmailAndPassword(email, password);
+
   void signOut() {
     _authRepository.signOut();
   }

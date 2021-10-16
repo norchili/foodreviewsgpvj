@@ -2,9 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:foodgpvjreviews/Bloc/bloc.dart';
 import 'package:foodgpvjreviews/User/model/user.dart' as model_user;
+import 'package:foodgpvjreviews/User/ui/screens/sign_up_screen.dart';
 import 'package:foodgpvjreviews/User/ui/widgets/login_gradient_back.dart';
 import 'package:foodgpvjreviews/User/ui/widgets/logo_social_network.dart';
 import 'package:foodgpvjreviews/User/ui/widgets/text_input.dart';
+import 'package:foodgpvjreviews/User/ui/widgets/text_input_password.dart';
 import 'package:foodgpvjreviews/food_gpvj_main_app.dart';
 import 'package:foodgpvjreviews/responses/sign_in_response.dart';
 import 'package:foodgpvjreviews/widgets/custom_button.dart';
@@ -24,6 +26,17 @@ class _LoginScreen extends State<LoginScreen> {
   late double screenWidht;
   UserBloc? userBloc;
   bool isUrlLogoSet = false;
+  late TextEditingController _controllerEmail;
+  late TextEditingController _controllerPassword;
+
+  @override
+  void initState() {
+    //Se ejecuta solo una vez y se ejetua al inicio
+    super.initState();
+    _controllerEmail = TextEditingController();
+    _controllerPassword = TextEditingController();
+  }
+
   @override
   Widget build(BuildContext context) {
     userBloc = BlocProvider.of(context);
@@ -50,8 +63,8 @@ class _LoginScreen extends State<LoginScreen> {
   }
 
   Widget signInGoogleUI() {
-    final _controllerEmail = TextEditingController();
-    final _controllerPassword = TextEditingController();
+    //_controllerEmail = TextEditingController();
+    //_controllerPassword = TextEditingController();
     return Scaffold(
       body: Stack(
         alignment: Alignment.center,
@@ -92,35 +105,51 @@ class _LoginScreen extends State<LoginScreen> {
                     titleText: 'Correo electrónico',
                   ),
                   space(20.0, screenWidht),
-                  TextInput(
+                  TextInputPassword(
                     hintText: "Contraseña",
-                    inputType: null,
                     controller: _controllerPassword,
                     prefixIconData: Icons.lock_outlined,
-                    isPasswordObscure: true,
                     fontSize: 14.0,
                     titleText: 'Contraseña',
                   ),
                   space(50.0, screenWidht),
                   CustomButton(
                     text: "Ingresar",
-                    fontSize: 20.0,
-                    onPressed: () {},
+                    fontSize: 16.0,
+                    onPressed: () {
+                      userBloc!.signOut();
+                      userBloc!
+                          .signInWithEmailAndPassword(
+                              _controllerEmail.text, _controllerPassword.text)
+                          .then((response) {
+                        updateUserOnCloudFirebase(response);
+                      });
+                    },
                     //width: 300.0,
-                    height: 70.0,
+                    height: 60.0,
                   ),
                   space(10.0, screenWidht),
                   Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const <Widget>[
-                        Text("¿No tienes una cuenta?",
+                      children: <Widget>[
+                        const Text("¿No tienes una cuenta?",
                             style: TextStyle(
                                 fontSize: 11.0, color: Color(0xFFBBBCC2))),
-                        Text("  Crear cuenta",
-                            style: TextStyle(
-                                fontSize: 12.0,
-                                color: Color(0xFFFE7813),
-                                fontWeight: FontWeight.w700))
+                        TextButton(
+                          child: const Text("  Crear cuenta",
+                              style: TextStyle(
+                                  fontSize: 12.0,
+                                  color: Color(0xFFFE7813),
+                                  fontWeight: FontWeight.w700)),
+                          onPressed: () {
+                            //Ir a panta de Registro nuevo de usuario
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (BuildContext context) =>
+                                        const SignUpScreen()));
+                          },
+                        )
                       ]),
                   space(20.0, screenWidht),
                   SizedBox(
@@ -134,34 +163,16 @@ class _LoginScreen extends State<LoginScreen> {
                             color: Color(0xFFBBBCC2)),
                       )),
                   space(15.0, screenWidht),
-                  Container(
-                      alignment: Alignment.center,
-                      width: screenWidht,
-                      decoration: BoxDecoration(
-                          border: Border.all(
-                              color: const Color(0xFFE7E7EB), width: 1),
-                          borderRadius: BorderRadius.circular(30.0)),
-                      child: SocialNetworkLogo(
-                        pathLogo: "images/google.jpg",
-                        onPresed: () {
-                          userBloc!.signOut();
-                          userBloc!.signIn().then((response) {
-                            if (response.error == null &&
-                                response.user != null) {
-                              userBloc!.updateUserData(model_user.User(
-                                  userId: response.user!.uid.toString(),
-                                  name: response.user!.displayName.toString(),
-                                  email: response.user!.email.toString(),
-                                  photoURL:
-                                      response.user!.photoURL.toString()));
-                              const CircularProgressIndicator();
-                            } else {
-                              //mostrar cuadro de error
-                              _showErrorDialog(context, response);
-                            }
-                          });
-                        },
-                      )),
+                  SocialNetworkLogo(
+                    pathLogo: "images/google.jpg",
+                    onPresed: () {
+                      userBloc!.signOut();
+                      userBloc!.signIn().then((response) {
+                        updateUserOnCloudFirebase(response);
+                      });
+                    },
+                    widht: screenWidht,
+                  ),
                 ],
               ))
         ],
@@ -175,13 +186,18 @@ class _LoginScreen extends State<LoginScreen> {
 
     if (response.error == SignInError.cancelled) {
       title = "Cancelado...";
-      contentText = "Autenticación con Google cancelada";
+      contentText = "Autenticación con Google cancelada.";
+    } else if (response.error == SignInError.userNotFound ||
+        response.error == SignInError.wrongPassword ||
+        response.error == SignInError.invalidCredential) {
+      title = "Error de acceso";
+      contentText = "Correo ó contraseña incorrecta.";
     } else if (response.user == null) {
       title = "Deslogueado";
       contentText = "No existe un usuario logueado";
     } else {
       title = "Error";
-      contentText = "Ocurrio un error al iniciar sesion con Google";
+      contentText = "Ocurrió un error al iniciar sesión";
     }
 
     return showDialog<void>(
@@ -195,5 +211,19 @@ class _LoginScreen extends State<LoginScreen> {
       width: width,
       height: heigth,
     );
+  }
+
+  void updateUserOnCloudFirebase(SignInResponse response) {
+    if (response.error == null && response.user != null) {
+      userBloc!.updateUserData(model_user.User(
+          userId: response.user!.uid.toString(),
+          name: response.user!.displayName.toString(),
+          email: response.user!.email.toString(),
+          photoURL: response.user!.photoURL.toString()));
+      const CircularProgressIndicator();
+    } else {
+      //mostrar cuadro de error
+      _showErrorDialog(context, response);
+    }
   }
 }

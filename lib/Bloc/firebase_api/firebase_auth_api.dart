@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:foodgpvjreviews/responses/sign_in_response.dart';
+import 'package:foodgpvjreviews/responses/sign_up_response.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:developer';
 
@@ -61,6 +62,44 @@ class FirebaseAuthAPI {
 
     // Once signed in, return the UserCredential
     return _auth.signInWithCredential(facebookAuthCredential);
+  }
+
+  //Metodo para autenticar con email y pasword en firebase
+  Future<SignInResponse> signInWithEmailAndPassword(
+      String email, String password) async {
+    try {
+      final userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      final user = userCredential.user!;
+      return SignInResponse(
+        user: user,
+        providerId: userCredential.credential?.providerId,
+        error: null,
+      );
+    } on FirebaseAuthException catch (e) {
+      return getSignInError(e);
+    }
+  }
+
+  //Metodo par registrar usuario nuevo en Firebase
+  Future<SignUpResponse> register(SignUpData data) async {
+    try {
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: data.email,
+        password: data.password,
+      );
+      await userCredential.user!.updateDisplayName(
+        "${data.name} ${data.lastname}",
+      );
+      return SignUpResponse(null, userCredential.user!);
+    } on FirebaseAuthException catch (e) {
+      return SignUpResponse(
+        parseStringToSignUpError(e.code),
+        null,
+      );
+    }
   }
 
   //Metodo para obtener el usuario actualmente logueado
